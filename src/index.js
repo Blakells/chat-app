@@ -14,17 +14,24 @@ const publicDir = path.join(__dirname, '../public')
 
 app.use(express.static(publicDir))
 
-let count = 0
+const message = 'Welcome!'
 
 io.on('connection', (socket) => {
     console.log('New Web Socket Connection')
 
-    socket.emit('countUpdated', count)
+    socket.emit('message', message)
+    socket.broadcast.emit('message', 'A new user has joined')
 
-    socket.on('increment', () => {
-        count++
-        //socket.emit('countUpdated', count)
-        io.emit('countUpdated', count)
+    socket.on('sendMessage', (msg) => {
+        io.emit('message', msg)
+    })
+
+    socket.on('sendLocation', (location) => {
+        io.emit('message', `https://www.google.com/maps?q=${location.latitude},${location.longitude}`)
+    })
+
+    socket.on('disconnect', () => {
+        io.emit('message', 'a user has left')
     })
 })
 
