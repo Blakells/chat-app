@@ -19,16 +19,22 @@ app.use(express.static(publicDir))
 io.on('connection', (socket) => {
     console.log('New Web Socket Connection')
 
-    socket.emit('message', generateMessage('Welcome!'))
-    socket.broadcast.emit('message', generateMessage('A new user has joined'))
+    socket.on('join', ({username, room}) => {
+        socket.join(room)
+
+        socket.emit('message', generateMessage('Welcome!'))
+        socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined!`))
+
+
+    })
 
 
     socket.on('sendMessage', (msg, cb) => {
         const filter = new Filter()
 
-if (filter.isProfane(msg)) {
+    if (filter.isProfane(msg)) {
     return cb('Profanity banned')
-}
+    }
 
         io.emit('message', generateMessage(msg))
         cb()
